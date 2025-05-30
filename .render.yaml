@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sennin-chat
+    env: node
+    region: oregon  # または frankfurt（ヨーロッパ）など。Render側で選択されます
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    branch: master
+    rootDir: .
