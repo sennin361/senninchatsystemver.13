@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>仙人チャット</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <div id="login-screen">
+    <h1>仙人チャット</h1>
+    <input type="text" id="username" placeholder="ユーザー名を入力" />
+    <button id="login-btn">入室</button>
+  </div>
+
+  <div id="chat-screen" class="hidden">
+    <div id="chat-header">
+      <span id="welcome-user"></span>
+      <button id="leave-btn">退室</button>
+    </div>
+    <div id="messages"></div>
+    <form id="message-form">
+      <input type="text" id="message-input" placeholder="メッセージを入力" autocomplete="off" />
+      <button type="submit">送信</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
