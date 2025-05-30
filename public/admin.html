@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>仙人チャット 管理画面</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div id="login-screen">
+    <h1>管理者ログイン</h1>
+    <input type="password" id="admin-password" placeholder="パスワードを入力" />
+    <button id="login-btn">ログイン</button>
+    <p id="login-error" style="color: red; display: none;"></p>
+  </div>
+
+  <div id="admin-screen" class="hidden">
+    <h1>仙人チャット 管理画面</h1>
+    <div>
+      <button id="logout-btn">ログアウト</button>
+    </div>
+
+    <div>
+      <h2>接続ユーザー数: <span id="user-count">0</span></h2>
+    </div>
+
+    <div>
+      <h2>全体チャット送信</h2>
+      <form id="broadcast-form">
+        <input type="text" id="broadcast-message" placeholder="全体に送信するメッセージ" />
+        <button type="submit">送信</button>
+      </form>
+    </div>
+
+    <div>
+      <h2>チャットログ</h2>
+      <div id="chatlog-container" style="max-height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; background: #f9f9f9;"></div>
+    </div>
+
+    <div>
+      <h2>ユーザーBAN</h2>
+      <form id="ban-form">
+        <input type="text" id="ban-username" placeholder="BANするユーザー名" />
+        <button type="submit">BAN</button>
+      </form>
+      <div id="ban-list-container">
+        <h3>BANリスト</h3>
+        <ul id="ban-list"></ul>
+      </div>
+    </div>
+
+    <div>
+      <button id="reset-server-btn" style="background-color: #d32f2f; color: white;">サーバーリセット</button>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
