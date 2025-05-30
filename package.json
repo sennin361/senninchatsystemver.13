@@ -1,0 +1,19 @@
+{
+  "name": "sennin-chat",
+  "version": "1.0.0",
+  "description": "セキュアなリアルタイムPWAチャットアプリ『仙人チャット』",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["chat", "realtime", "PWA", "socket.io", "AES", "admin"],
+  "author": "Sennin Systems",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "body-parser": "^1.20.2",
+    "crypto-js": "^4.2.0"
+  }
+}
