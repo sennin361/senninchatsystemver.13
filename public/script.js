@@ -1,115 +1,115 @@
-const socket = io();
-const loginScreen = document.getElementById('login-screen');
-const chatScreen = document.getElementById('chat-screen');
-const chatBox = document.getElementById('chat-box');
-const nameInput = document.getElementById('name');
-const passInput = document.getElementById('password');
-const roomInput = document.getElementById('room');
-const messageInput = document.getElementById('message');
-const imageInput = document.getElementById('imageInput');
-const videoInput = document.getElementById('videoInput');
+let socket;
+let username = '';
+let room = '';
+let isAdmin = false;
 
-document.getElementById('join').onclick = () => {
-  const name = nameInput.value.trim();
-  const password = passInput.value;
-  const room = roomInput.value.trim();
-  if (!name || !room) return alert('名前とあいことばを入力してください');
-  socket.emit('join', { name, password, room });
-  loginScreen.classList.add('hidden');
-  chatScreen.classList.remove('hidden');
-};
+function loginUser() {
+  username = document.getElementById('username').value.trim();
+  room = document.getElementById('room').value.trim();
 
-document.getElementById('send').onclick = () => {
-  const msg = messageInput.value;
-  if (msg) {
-    socket.emit('chat message', msg);
-    messageInput.value = '';
+  if (!username || !room) {
+    alert('名前とあいことばを入力してください');
+    return;
   }
-};
 
-socket.on('chat message', msg => {
-  addMessage(msg.user, msg.text, msg.read);
-  socket.emit('read');
-});
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('chat').style.display = 'block';
 
-socket.on('image', msg => {
-  const div = document.createElement('div');
-  div.className = 'message ' + bubbleClass(msg.user);
-  const img = document.createElement('img');
-  img.src = msg.image;
-  img.className = 'chat-image';
-  div.appendChild(img);
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  socket.emit('read');
-});
+  socket = io();
 
-socket.on('video', msg => {
-  const div = document.createElement('div');
-  div.className = 'message ' + bubbleClass(msg.user);
-  const vid = document.createElement('video');
-  vid.src = msg.video;
-  vid.controls = true;
-  vid.className = 'chat-video';
-  div.appendChild(vid);
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  socket.emit('read');
-});
+  socket.emit('join', { name: username, room });
 
-socket.on('system', msg => {
-  const div = document.createElement('div');
-  div.className = 'message system';
-  div.textContent = msg;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-socket.on('chat log', logs => {
-  logs.forEach(m => {
-    if (m.text) socket.emit('chat message', m.text);
-    if (m.image) socket.emit('image', m.image);
-    if (m.video) socket.emit('video', m.video);
+  socket.on('message', data => {
+    addMessage(data);
   });
-});
 
-socket.on('banned', () => {
-  alert('あなたはBANされています');
-  location.reload();
-});
+  socket.on('image', data => {
+    addImage(data);
+  });
 
-function addMessage(user, text, read) {
-  const div = document.createElement('div');
-  div.className = 'message ' + bubbleClass(user);
-  div.textContent = `${user}: ${text}` + (read ? ' ✅' : '');
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  socket.on('video', data => {
+    addVideo(data);
+  });
 }
 
-function bubbleClass(user) {
-  if (user === nameInput.value.trim()) return 'me';
-  if (user === '管理者' || passInput.value === 'sennin114514') return 'admin';
-  return 'other';
+function sendMessage() {
+  const input = document.getElementById('message');
+  const text = input.value.trim();
+  if (text) {
+    socket.emit('message', { name: username, message: text, room });
+    input.value = '';
+  }
 }
 
-document.getElementById('exit').onclick = () => {
-  location.reload();
-};
+function sendImage(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      socket.emit('image', { name: username, image: reader.result, room });
+    };
+    reader.readAsDataURL(file);
+  }
+}
 
-imageInput.onchange = () => {
-  const file = imageInput.files[0];
-  const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit('image', reader.result);
-  };
-  reader.readAsDataURL(file);
-};
+function sendVideo(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('video/')) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      socket.emit('video', { name: username, video: reader.result, room });
+    };
+    reader.readAsDataURL(file);
+  }
+}
 
-videoInput.onchange = () => {
-  const file = videoInput.files[0];
-  const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit('video', reader.result);
-  };
-  reader.readAsDataURL(file);
-};
+function addMessage(data) {
+  const container = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.classList.add('bubble');
+
+  if (data.isAdmin) {
+    msg.classList.add('admin');
+  } else if (data.name === username) {
+    msg.classList.add('self');
+  } else {
+    msg.classList.add('other');
+  }
+
+  const timestamp = new Date(data.time || Date.now()).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  msg.innerHTML = `<strong>${data.name}:</strong><br>${data.message}<span class="timestamp">${timestamp}</span>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addImage(data) {
+  const container = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.classList.add('bubble');
+
+  if (data.name === username) {
+    msg.classList.add('self');
+  } else {
+    msg.classList.add('other');
+  }
+
+  msg.innerHTML = `<strong>${data.name}:</strong><br><img src="${data.image}" style="max-width: 200px;"><span class="timestamp">${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addVideo(data) {
+  const container = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.classList.add('bubble');
+
+  if (data.name === username) {
+    msg.classList.add('self');
+  } else {
+    msg.classList.add('other');
+  }
+
+  msg.innerHTML = `<strong>${data.name}:</strong><br><video controls src="${data.video}" style="max-width: 200px;"></video><span class="timestamp">${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
