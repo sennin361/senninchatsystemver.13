@@ -1,128 +1,115 @@
 const socket = io();
-let username = "";
+const loginScreen = document.getElementById('login-screen');
+const chatScreen = document.getElementById('chat-screen');
+const chatBox = document.getElementById('chat-box');
+const nameInput = document.getElementById('name');
+const passInput = document.getElementById('password');
+const roomInput = document.getElementById('room');
+const messageInput = document.getElementById('message');
+const imageInput = document.getElementById('imageInput');
+const videoInput = document.getElementById('videoInput');
 
-while (!username) {
-  username = prompt("ユーザー名を入力してください：");
-}
+document.getElementById('join').onclick = () => {
+  const name = nameInput.value.trim();
+  const password = passInput.value;
+  const room = roomInput.value.trim();
+  if (!name || !room) return alert('名前とあいことばを入力してください');
+  socket.emit('join', { name, password, room });
+  loginScreen.classList.add('hidden');
+  chatScreen.classList.remove('hidden');
+};
 
-const chatForm = document.getElementById("chatForm");
-const messageInput = document.getElementById("messageInput");
-const chatBox = document.getElementById("chatBox");
-const imageInput = document.getElementById("imageInput");
-const videoInput = document.getElementById("videoInput");
-const roomName = "main";
-
-// 入室通知
-socket.emit("join", { name: username, room: roomName });
-
-// 送信処理
-chatForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const message = messageInput.value.trim();
-  if (message) {
-    socket.emit("chat message", { name: username, message, room: roomName });
-    messageInput.value = "";
+document.getElementById('send').onclick = () => {
+  const msg = messageInput.value;
+  if (msg) {
+    socket.emit('chat message', msg);
+    messageInput.value = '';
   }
+};
+
+socket.on('chat message', msg => {
+  addMessage(msg.user, msg.text, msg.read);
+  socket.emit('read');
 });
 
-// 画像送信
-imageInput.addEventListener("change", () => {
-  const file = imageInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit("image", {
-      name: username,
-      image: reader.result,
-      room: roomName,
-    });
-  };
-  reader.readAsDataURL(file);
-});
-
-// 動画送信
-videoInput.addEventListener("change", () => {
-  const file = videoInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit("video", {
-      name: username,
-      video: reader.result,
-      room: roomName,
-    });
-  };
-  reader.readAsDataURL(file);
-});
-
-// メッセージ受信
-socket.on("chat message", (data) => {
-  const bubble = document.createElement("div");
-  bubble.classList.add("bubble");
-
-  if (data.name === username) {
-    bubble.classList.add("me");
-  } else if (data.name === "[管理者]") {
-    bubble.classList.add("admin");
-  } else {
-    bubble.classList.add("other");
-  }
-
-  bubble.innerHTML = `<strong>${data.name}:</strong> ${data.message}`;
-  chatBox.appendChild(bubble);
+socket.on('image', msg => {
+  const div = document.createElement('div');
+  div.className = 'message ' + bubbleClass(msg.user);
+  const img = document.createElement('img');
+  img.src = msg.image;
+  img.className = 'chat-image';
+  div.appendChild(img);
+  chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
+  socket.emit('read');
 });
 
-// 画像受信
-socket.on("image", (data) => {
-  const bubble = document.createElement("div");
-  bubble.classList.add("bubble");
-
-  if (data.name === username) {
-    bubble.classList.add("me");
-  } else if (data.name === "[管理者]") {
-    bubble.classList.add("admin");
-  } else {
-    bubble.classList.add("other");
-  }
-
-  const img = document.createElement("img");
-  img.src = data.image;
-  img.style.maxWidth = "200px";
-  bubble.innerHTML = `<strong>${data.name}:</strong><br>`;
-  bubble.appendChild(img);
-  chatBox.appendChild(bubble);
+socket.on('video', msg => {
+  const div = document.createElement('div');
+  div.className = 'message ' + bubbleClass(msg.user);
+  const vid = document.createElement('video');
+  vid.src = msg.video;
+  vid.controls = true;
+  vid.className = 'chat-video';
+  div.appendChild(vid);
+  chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
+  socket.emit('read');
 });
 
-// 動画受信
-socket.on("video", (data) => {
-  const bubble = document.createElement("div");
-  bubble.classList.add("bubble");
-
-  if (data.name === username) {
-    bubble.classList.add("me");
-  } else if (data.name === "[管理者]") {
-    bubble.classList.add("admin");
-  } else {
-    bubble.classList.add("other");
-  }
-
-  const video = document.createElement("video");
-  video.src = data.video;
-  video.controls = true;
-  video.style.maxWidth = "200px";
-  bubble.innerHTML = `<strong>${data.name}:</strong><br>`;
-  bubble.appendChild(video);
-  chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-// 入退室ログ表示
-socket.on("system", (msg) => {
-  const div = document.createElement("div");
-  div.classList.add("system");
+socket.on('system', msg => {
+  const div = document.createElement('div');
+  div.className = 'message system';
   div.textContent = msg;
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
 });
+
+socket.on('chat log', logs => {
+  logs.forEach(m => {
+    if (m.text) socket.emit('chat message', m.text);
+    if (m.image) socket.emit('image', m.image);
+    if (m.video) socket.emit('video', m.video);
+  });
+});
+
+socket.on('banned', () => {
+  alert('あなたはBANされています');
+  location.reload();
+});
+
+function addMessage(user, text, read) {
+  const div = document.createElement('div');
+  div.className = 'message ' + bubbleClass(user);
+  div.textContent = `${user}: ${text}` + (read ? ' ✅' : '');
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function bubbleClass(user) {
+  if (user === nameInput.value.trim()) return 'me';
+  if (user === '管理者' || passInput.value === 'sennin114514') return 'admin';
+  return 'other';
+}
+
+document.getElementById('exit').onclick = () => {
+  location.reload();
+};
+
+imageInput.onchange = () => {
+  const file = imageInput.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit('image', reader.result);
+  };
+  reader.readAsDataURL(file);
+};
+
+videoInput.onchange = () => {
+  const file = videoInput.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit('video', reader.result);
+  };
+  reader.readAsDataURL(file);
+};
