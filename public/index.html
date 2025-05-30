@@ -4,28 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>仙人チャット</title>
-  <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <div id="login-screen">
-    <h2>仙人チャット</h2>
-    <input type="text" id="name" placeholder="名前" required />
-    <input type="password" id="password" placeholder="パスワード（管理者用）" />
-    <input type="text" id="room" placeholder="あいことば（部屋名）" required />
-    <button id="join">入室</button>
+  <div id="chat-container">
+    <header>仙人チャット</header>
+    <main>
+      <div id="chat" class="chat-container"></div>
+    </main>
+    <form id="chat-form">
+      <input type="text" id="message-input" placeholder="メッセージを入力..." autocomplete="off" required />
+      <button type="submit">送信</button>
+    </form>
   </div>
-
-  <div id="chat-screen" class="hidden">
-    <div id="chat-box"></div>
-    <input type="text" id="message" placeholder="メッセージ" />
-    <input type="file" id="imageInput" accept="image/*" />
-    <input type="file" id="videoInput" accept="video/*" />
-    <button id="send">送信</button>
-    <button id="exit">退室</button>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
