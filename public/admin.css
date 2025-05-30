@@ -1,0 +1,84 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.hidden {
+  display: none;
+}
+
+#login-screen, #admin-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 16px;
+  background-color: #1976d2;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 6px;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+#logout-btn {
+  background-color: #d32f2f;
+  margin-bottom: 20px;
+}
+
+#logout-btn:hover {
+  background-color: #b71c1c;
+}
+
+#chatlog-container {
+  font-family: monospace;
+  font-size: 14px;
+  background-color: #fafafa;
+  border: 1px solid #ddd;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 400px;
+  white-space: pre-wrap;
+}
+
+#ban-list-container {
+  margin-top: 10px;
+}
+
+#ban-list {
+  list-style-type: disc;
+  margin-left: 20px;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  background: #fff8f8;
+  padding: 10px;
+  border-radius: 4px;
+}
